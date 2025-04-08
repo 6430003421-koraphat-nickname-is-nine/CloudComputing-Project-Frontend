@@ -76,48 +76,59 @@ const calculateAdjacentMines = (board: Board): Board => {
   return board;
 };
 
-const revealCell = (board: Board, row: number, col: number): Board => {
-  if (
-    row < 0 ||
-    col < 0 ||
-    row >= board.length ||
-    col >= board[0].length ||
-    board[row][col].isRevealed ||
-    board[row][col].isFlagged
-  )
-    return board;
-
-  board[row][col].isRevealed = true;
-
-  if (board[row][col].adjacentMines === 0 && !board[row][col].isMine) {
-    const directions = [
-      [-1, -1],
-      [-1, 0],
-      [-1, 1],
-      [0, -1],
-      [0, 1],
-      [1, -1],
-      [1, 0],
-      [1, 1],
-    ];
-    directions.forEach(([dx, dy]) => {
-      revealCell(board, row + dx, col + dy);
-    });
-  }
-
-  return board;
-};
-
 export default function MineSweeper() {
   const [board, setBoard] = useState<Board>([]);
   const [gameOver, setGameOver] = useState(false);
+  const [score, setScore] = useState(0);
 
+  const revealCell = (board: Board, row: number, col: number): Board => {
+    if (
+      row < 0 ||
+      col < 0 ||
+      row >= board.length ||
+      col >= board[0].length ||
+      board[row][col].isRevealed ||
+      board[row][col].isFlagged
+    )
+      return board;
+
+    board[row][col].isRevealed = true;
+    let scoreadd = 25;
+    if (board[row][col].adjacentMines === 0) {
+      scoreadd = 25;
+    } else {
+      scoreadd = 50 * board[row][col].adjacentMines;
+    }
+    setScore(score + scoreadd);
+
+    if (board[row][col].adjacentMines === 0 && !board[row][col].isMine) {
+      const directions = [
+        [-1, -1],
+        [-1, 0],
+        [-1, 1],
+        [0, -1],
+        [0, 1],
+        [1, -1],
+        [1, 0],
+        [1, 1],
+      ];
+      directions.forEach(([dx, dy]) => {
+        revealCell(board, row + dx, col + dy);
+      });
+    }
+
+    return board;
+  };
   const initializeGame = () => {
-    let newBoard = createEmptyBoard(10, 10);
-    newBoard = plantMines(newBoard, 10);
+    let maxrow = 10;
+    let maxcol = 10;
+    let maxmine = 10;
+    let newBoard = createEmptyBoard(maxrow, maxcol);
+    newBoard = plantMines(newBoard, maxmine);
     newBoard = calculateAdjacentMines(newBoard);
     setBoard([...newBoard]);
     setGameOver(false);
+    setScore(0);
   };
 
   useEffect(() => {
@@ -134,18 +145,30 @@ export default function MineSweeper() {
       return;
     }
     setBoard([...revealCell(updatedBoard, row, col)]);
+    let scoreadd = 50;
+    if (board[row][col].adjacentMines === 0) {
+      scoreadd = 50;
+    } else {
+      scoreadd = 100 * board[row][col].adjacentMines;
+    }
+    setScore(score + scoreadd);
   };
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
       <h1 className="text-2xl font-bold">Minesweeper</h1>
+      <h1 className=""> Score: {score}</h1>
       <div className="grid grid-cols-10 gap-1">
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <Button
               key={`${rowIndex}-${colIndex}`}
               className={`w-10 h-10 text-sm p-0 ${
-                cell.isRevealed ? "bg-gray-300" : "bg-blue-500"
+                cell.isRevealed
+                  ? cell.isMine
+                    ? "bg-gray-300"
+                    : "bg-gray-400"
+                  : "bg-blue-500"
               }`}
               onClick={() => handleClick(rowIndex, colIndex)}
             >
