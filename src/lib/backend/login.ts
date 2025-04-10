@@ -1,5 +1,5 @@
 export async function login(username: string, password: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/register`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

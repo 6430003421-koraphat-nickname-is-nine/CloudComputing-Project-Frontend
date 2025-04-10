@@ -1,5 +1,5 @@
 export default async function getScores() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/score/`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/score`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
